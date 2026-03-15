@@ -1,4 +1,4 @@
 @echo off
 cd /d "%~dp0"
-python "%~dp0vatlog.py"
+python "%~dp0scripts\vatlog.py"
 pause

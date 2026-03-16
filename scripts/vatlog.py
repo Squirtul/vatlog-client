@@ -23,7 +23,7 @@ validTimes = ["0000", "0030", "0100", "0130", "0200", "0230",
               "2100", "2130", "2200", "2230", "2300", "2330"]
 
 # Fetch FIR names
-with open(os.path.join(os.path.dirname(__file__), 'references', 'firref.json'),'r',encoding='utf-8') as i:
+with open(os.path.join(os.path.dirname(__file__), '..', 'references', 'firref.json'),'r',encoding='utf-8') as i:
     firNames = json.load(i)
 
 def fetchSettings():

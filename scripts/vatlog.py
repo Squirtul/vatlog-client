@@ -32,7 +32,7 @@ with open(os.path.join(os.path.dirname(__file__), '..', 'references', 'firref.js
     firNames = json.load(i)
 
 def fetchSettings():
-    with open("scripts/localsettings.conf", "r") as f:
+    with open("localsettings.conf", "r") as f:
         names = False
         apikey = None
         writekey = None
@@ -123,7 +123,7 @@ def settings():
             while choiceS != 1 and choiceS != 2:
                 choiceS = int(input("\n-1- : Edit DISPLAY FIR NAMES\n-2- : Exit\n\n"))
             if choiceS == 1:
-                with open ("scripts/localsettings.conf", "r") as f:
+                with open ("localsettings.conf", "r") as f:
                     content = f.read()
                 if names == False:
                     content = content.replace("names0", "names1")
@@ -131,7 +131,7 @@ def settings():
                 else:
                     content = content.replace("names1", "names0")
                     print("\nDISPLAY FIR NAMES now FALSE")
-                with open ("scripts/localsettings.conf", "w") as f:
+                with open ("localsettings.conf", "w") as f:
                     f.write(content)
                 names = fetchSettings()
             if choiceS == 2:

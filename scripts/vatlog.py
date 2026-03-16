@@ -44,20 +44,20 @@ names, READ_KEY, WRITE_KEY = fetchSettings()
 READ_HEADERS  = {"X-API-Key": READ_KEY}
 WRITE_HEADERS = {"X-API-Key": WRITE_KEY}
 
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 _cache = None
-_cache_expiry = datetime.min
+_cache_expiry = datetime.min.replace(tzinfo=timezone.utc)
 CACHE_TTL = timedelta(minutes=5)
 
 def fetchAllLogs(force=False):
     global _cache, _cache_expiry
-    if not force and _cache is not None and datetime.utcnow() < _cache_expiry:
+    if not force and _cache is not None and datetime.now(timezone.utc) < _cache_expiry:
         return _cache
     response = requests.get(f"{API_BASE}/logs", headers=READ_HEADERS)
     response.raise_for_status()
     _cache = response.json()
-    _cache_expiry = datetime.utcnow() + CACHE_TTL
+    _cache_expiry = datetime.now(timezone.utc) + CACHE_TTL
     return _cache
 
 def invalidateCache():

@@ -131,7 +131,7 @@ def settings():
                 else:
                     content = content.replace("names1", "names0")
                     print("\nDISPLAY FIR NAMES now FALSE")
-                with open ("scripts/localsettings.conf", "a") as f:
+                with open ("scripts/localsettings.conf", "w") as f:
                     f.write(content)
                 names = fetchSettings()
             if choiceS == 2:

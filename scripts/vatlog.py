@@ -4,6 +4,18 @@ import requests
 
 API_BASE = "https://vatlog-api-production.up.railway.app"
 
+def fetchAllLogs():
+    response = requests.get(f"{API_BASE}/logs", headers=READ_HEADERS)
+    if response.status_code == 429:
+        print("\nRate limit hit — please wait a moment and try again.")
+        return []
+    response.raise_for_status()
+    data = response.json()
+    if not isinstance(data, list):
+        print(f"\nUnexpected API response: {data}")
+        return []
+    return data
+
 firs = ["bird", "ebbu", "edgg", "edmm", "edww", "eett", "efin",
         "egpx", "egtt", "ehaa", "eisn", "ekdk", "enor", "epww",
         "esaa", "evrr", "eyvl", "laaa", "lbsr", "lccc", "ldzo",
@@ -23,7 +35,7 @@ validTimes = ["0000", "0030", "0100", "0130", "0200", "0230",
               "2100", "2130", "2200", "2230", "2300", "2330"]
 
 # Fetch FIR names
-with open(os.path.join(os.path.dirname(__file__), '..', 'references', 'firref.json'),'r',encoding='utf-8') as i:
+with open(os.path.join(os.path.dirname(__file__), 'references', 'firref.json'),'r',encoding='utf-8') as i:
     firNames = json.load(i)
 
 def fetchSettings():
@@ -44,27 +56,6 @@ names, READ_KEY, WRITE_KEY = fetchSettings()
 READ_HEADERS  = {"X-API-Key": READ_KEY}
 WRITE_HEADERS = {"X-API-Key": WRITE_KEY}
 
-from datetime import datetime, timedelta, timezone
-
-_cache = None
-_cache_expiry = datetime.min.replace(tzinfo=timezone.utc)
-CACHE_TTL = timedelta(minutes=5)
-
-def fetchAllLogs(force=False):
-    global _cache, _cache_expiry
-    if not force and _cache is not None and datetime.now(timezone.utc) < _cache_expiry:
-        return _cache
-    response = requests.get(f"{API_BASE}/logs", headers=READ_HEADERS)
-    response.raise_for_status()
-    _cache = response.json()
-    _cache_expiry = datetime.now(timezone.utc) + CACHE_TTL
-    return _cache
-
-def invalidateCache():
-    global _cache, _cache_expiry
-    _cache = None
-    _cache_expiry = datetime.min
-
 def collectTime():
     time = ""
     while time not in validTimes:
@@ -84,7 +75,6 @@ def addLog():
     print("\nSubmitting...")
     response = requests.post(f"{API_BASE}/logs", json=batch, headers=WRITE_HEADERS)
     response.raise_for_status()
-    invalidateCache()
     print("Successfully added!")
 
 def summariseFIR():
@@ -96,7 +86,7 @@ def summariseFIR():
     labelWidth = max(len(f"At {i}:") for i in validTimes)
     print()
     for i in validTimes:
-        match = next((e for e in entries if e["fir"] == search and e["time"] == i), None)
+        match = next((e for e in entries if e["fir"] == i and e["time"] == search), None)
         label = f"At {i}:".ljust(labelWidth)
         if match and match["count"] > 0:
             print(f"{label} {match['average']:.2f}")
@@ -128,29 +118,31 @@ def settings():
     print("-"*30)
     global names
     maintainSettings = True
-    if names == True:
-        print("\n  DISPLAY FIR NAMES : TRUE\n")
-    else:
-        print("\n  DISPLAY FIR NAMES : FALSE\n")
-    print("-"*30)
-    while maintainSettings:
-        choiceS = 0
-        while choiceS != 1 and choiceS != 2:
-            choiceS = int(input("\n-1- : Edit DISPLAY FIR NAMES\n-2- : Exit\n\n"))
-        if choiceS == 1:
-            with open("localsettings.conf", "r") as f:
-                content = f.read()
-            if names == False:
-                content = content.replace("names0", "names1")
-                print("\nDISPLAY FIR NAMES now TRUE")
-            else:
-                content = content.replace("names1", "names0")
-                print("\nDISPLAY FIR NAMES now FALSE")
-            with open("localsettings.conf", "w") as f:
-                f.write(content)
-            names, _, _ = fetchSettings()
-        if choiceS == 2:
-            maintainSettings = False
+    with open ("localsettings.conf","r") as f:
+        lines = f.readlines()
+        if names == True:
+            print("\n  DISPLAY FIR NAMES : TRUE\n")
+        else:
+            print("\n  DISPLAY FIR NAMES : FALSE\n")
+        print("-"*30)
+        while maintainSettings:
+            choiceS = 0
+            while choiceS != 1 and choiceS != 2:
+                choiceS = int(input("\n-1- : Edit DISPLAY FIR NAMES\n-2- : Exit\n\n"))
+            if choiceS == 1:
+                with open("localsettings.conf", "r") as f:
+                    content = f.read()
+                if names == False:
+                    content = content.replace("names0", "names1")
+                    print("\nDISPLAY FIR NAMES now TRUE")
+                else:
+                    content = content.replace("names1", "names0")
+                    print("\nDISPLAY FIR NAMES now FALSE")
+                with open("localsettings.conf", "w") as f:
+                    f.write(content)
+                names = fetchSettings()
+            if choiceS == 2:
+                maintainSettings = False
 
 while True:
     choice = 0

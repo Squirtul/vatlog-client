@@ -81,7 +81,7 @@ def summariseFIR():
     search = ""
     while search not in firs:
         search = input("\nEnter FIR: ").lower()
-    print("Fetching from API...")
+    print("\nFetching from API...")
     entries = fetchAllLogs()
     labelWidth = max(len(f"At {i}:") for i in validTimes)
     print()
@@ -100,7 +100,7 @@ def summariseTime():
         len(f"{i.upper()} ({firNames[i]}) at {search}:" if names else f"{i.upper()} at {search}:")
         for i in firs
     )
-    print("Fetching from API...")
+    print("\nFetching from API...")
     entries = fetchAllLogs()
     print()
     for i in firs:

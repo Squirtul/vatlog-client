@@ -123,6 +123,8 @@ def add_log(write_key: str, show_names: bool):
     for fir in FIRS:
         label = fir_label(fir, show_names)
         raw = input(f"{label}: ").strip()
+        if raw.lower() == "x":
+            continue
         value = int(raw) if raw.isdigit() and len(raw) <= 2 else 0
         batch.append({"fir": fir, "time": time, "value": value})
 
